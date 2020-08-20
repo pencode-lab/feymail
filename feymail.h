@@ -61,6 +61,12 @@ typedef enum {
     true=1
 }bool;
 
+typedef struct commands {
+    char *text;
+    void (*fun)();
+    void (*flush)();
+}commands;
+
 
 
 ////////////////////////////////function////////////////////////////////////////
@@ -74,6 +80,20 @@ typedef enum {
 *   None.                                                                                                                            
 */
 void feymail_print_version();
+
+
+
+/*
+*Functionality:
+*   be called by smtpd, start child process(queue) receive data from network.
+*Parameters:
+*   [in] None.                                                                                 
+*   [out] None.
+*Returned value:                                                                                                                     
+*   exec return value. 
+*   return 0 success.                                                                                                                            
+*/
+int feymail_open();
 
 
 
