@@ -72,7 +72,7 @@ typedef enum {
 *Returned value:                                                                                                                     
 *   None.                                                                                                                            
 */
-void feymail_print_version();
+extern void feymail_print_version();
 
 
 
@@ -85,7 +85,7 @@ void feymail_print_version();
 *Returned value:                                                                                                                     
 *   return true or false.                                                                                                                            
 */
-bool feymail_open();
+extern bool feymail_open();
 
 
 

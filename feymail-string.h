@@ -43,7 +43,7 @@ eg:
 feymail_string_equals("fuck,shit","Fuck,shit")  return:1
 feymail_string_equals("fuck,shit","fuck,fuck")  return:0
 */     
-int feymail_string_equals(char *s,char *t);
+extern int feymail_string_equals(char *s,char *t);
 
 
 /*                                                                                                                                   
@@ -60,7 +60,7 @@ eg:
 feymail_string_chr("fuck,shit",'B')  return:9    
 feymail_string_chr("fucckkkkk",'k')  return:4
 */
-unsigned int feymail_string_chr(char *s,int c);
+extern unsigned int feymail_string_chr(char *s,int c);
 
 
 /*                                                                                                                                   
@@ -76,6 +76,6 @@ unsigned int feymail_string_chr(char *s,int c);
 eg:
 feymail_string_rchr("FufccfkkkkkA",'k')  return:10
 */
-unsigned int feymail_string_rchr(char *s,int n,int c);
+extern unsigned int feymail_string_rchr(char *s,int n,int c);
 
 #endif

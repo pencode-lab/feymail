@@ -53,4 +53,8 @@ extern int feymail_fd_copy(int to,int from);
 */
 extern int feymail_fd_move(int to,int from);
 
+
+extern int feymail_timeoutread(int t,int fd,char *buf,int len);
+extern int feymail_timeoutwrite(int t,int fd,char *buf,int len);
+
 #endif
