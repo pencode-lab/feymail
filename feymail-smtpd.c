@@ -4,6 +4,7 @@
 
 #include <feymail.h>
 #include <feymail-string.h>
+#include <feymail-smtpd.h>
 
 
 static int addrparse(char *arg,char *addr)

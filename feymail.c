@@ -24,7 +24,7 @@ static void setup_qqargs()
         binqqargs[0] = "bin/feymail-queue";
 }
 
-int feymail_open()
+bool feymail_open()
 {
     int pim[2];
     int pie[2];
@@ -32,19 +32,19 @@ int feymail_open()
 
     setup_qqargs();
 
-    if (pipe(pim) == -1) return -1;
-    if (pipe(pie) == -1) { close(pim[0]); close(pim[1]); return -1; }
+    if (pipe(pim) == -1) return false;
+    if (pipe(pie) == -1) { close(pim[0]); close(pim[1]); return false; }
  
     switch(pid = vfork()) {
         case -1:
             close(pim[0]); close(pim[1]);
             close(pie[0]); close(pie[1]);
-            return -1;
+            return false;
         case 0:
             close(pim[1]);
             close(pie[1]);
-            if (feymail_fd_move(0,pim[0]) == -1) _exit(120);
-            if (feymail_fd_move(1,pie[0]) == -1) _exit(120);
+            if (feymail_fd_move(0,pim[0]) == false) _exit(120);
+            if (feymail_fd_move(1,pie[0]) == false) _exit(120);
             //if (chdir(auto_qmail) == -1) _exit(61);
             execv(*binqqargs,binqqargs);
             _exit(120);
@@ -53,5 +53,5 @@ int feymail_open()
     close(pim[0]);
     close(pie[0]);
 
-    return 0;
+    return true;
 }

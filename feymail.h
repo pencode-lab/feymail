@@ -1,6 +1,6 @@
 /*
 Copyright (c) 2019 Pencode.net
-Author: Zero <stone@bzline.cn> 
+Author: Zero <zero@bzline.cn> 
 
 Feymail, a simple MTA for   High Performance Data transmission.
 
@@ -61,13 +61,6 @@ typedef enum {
     true=1
 }bool;
 
-typedef struct commands {
-    char *text;
-    void (*fun)();
-    void (*flush)();
-}commands;
-
-
 
 ////////////////////////////////function////////////////////////////////////////
 /*
@@ -90,10 +83,9 @@ void feymail_print_version();
 *   [in] None.                                                                                 
 *   [out] None.
 *Returned value:                                                                                                                     
-*   exec return value. 
-*   return 0 success.                                                                                                                            
+*   return true or false.                                                                                                                            
 */
-int feymail_open();
+bool feymail_open();
 
 
 
