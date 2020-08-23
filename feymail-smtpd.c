@@ -14,10 +14,10 @@ feymail m;
 
 static int safewrite(int fd,char *buf,int len)
 {
-  int r;
-  r = feymail_timeoutwrite(timeout,fd,buf,len);
-  if (r <= 0) _exit(1);
-  return r;
+    int r;
+    r = feymail_timeoutwrite(timeout,fd,buf,len);
+    if (r <= 0) _exit(1);
+    return r;
 }
 
 
