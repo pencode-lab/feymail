@@ -63,7 +63,12 @@ eg:
 */     
 extern int feymail_wait_pid(int *wstat,int pid);
 
-
 extern datetime_sec feymail_now();
+
+
+
+extern void feymail_sig_pipeignore();
+extern void feymail_sig_pipedefault();
+
 
 #endif

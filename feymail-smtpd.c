@@ -256,6 +256,8 @@ int main(void)
     printf("addr = [%s][%d]\n",addr,addr_len);
     */
 
+    feymail_sig_pipeignore();
+
     command(0,1,smtpcommands); 
     return(0);
 }
