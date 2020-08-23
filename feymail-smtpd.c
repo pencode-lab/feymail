@@ -6,9 +6,11 @@
 #include <feymail-string.h>
 #include <feymail-smtpd.h>
 #include <feymail-fd.h>
+#include <feymail-sys.h>
 
 
 int timeout = 1200;
+feymail m;
 
 static int safewrite(int fd,char *buf,int len)
 {
@@ -161,6 +163,16 @@ static void flush()
     return;
 }
 
+/*from remote get all data and deliver to queue success*/
+static void acceptmessage(unsigned long pid)
+{
+    datetime_sec when;
+  
+    when = feymail_now();
+
+    fprintf(stderr,"feymail accept data ok.\n");
+}
+
 
 /////////////////////////////////////standard command function for smtp///////////////////////////////
 static void smtp_quit()
@@ -177,7 +189,15 @@ static void smtp_helo(char *argv)
 
 static void smtp_data(char *argv)
 {
+    char *s;
     fprintf(stderr,"in function:%s\n",__func__);
+    feymail_open(&m);
+    s = feymail_close(&m);
+
+    if(!*s) acceptmessage(m.pid);
+    else
+        fprintf(stderr,"queue close,return:%s\n",s);
+
     return ;
 }
 

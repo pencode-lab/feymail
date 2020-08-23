@@ -61,6 +61,13 @@ typedef enum {
     true=1
 }bool;
 
+typedef struct feymail {
+    int flagerr;
+    unsigned long pid;
+    int fdm;
+    int fde;
+}feymail;
+
 
 ////////////////////////////////function////////////////////////////////////////
 /*
@@ -85,7 +92,20 @@ extern void feymail_print_version();
 *Returned value:                                                                                                                     
 *   return true or false.                                                                                                                            
 */
-extern bool feymail_open();
+extern bool feymail_open(feymail *m);
+
+
+/*
+*Functionality:
+*   be called by smtpd, start child process(queue) receive data from network.
+*Parameters:
+*   [in] feymail.                                                                                 
+*   [out] None.
+*Returned value:                                                                                                                     
+*   if happen error return string (char*)
+*   if success ,return Null char*
+*/
+extern char *feymail_close(feymail *m);
 
 
 

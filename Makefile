@@ -1,14 +1,18 @@
 CXXFLAGS= -g -O2  -D_GNU_SOURCE
-PROGRAMS = feymail_smtpd
-CLEAR_PROGRAMS = bin/feymail_smtpd
+PROGRAMS = feymail-smtpd feymail-queue
+CLEAR_PROGRAMS = bin/feymail-smtpd
 LIB_FLAGS = -I.  -lpthread
-LIB_SRC_FILE  = feymail.c 
+LIB_SRC_FILE  = feymail.c  feymail-fd.c feymail-string.c feymail-sys.c
 
 all: ${PROGRAMS}
 
 
-feymail_smtpd: feymail_smtpd.c
-	gcc ${CXXFLAGS} -o bin/feymail_smtpd  feymail_smtpd.c ${LIB_SRC_FILE} ${LIB_FLAGS}
+feymail-smtpd: feymail-smtpd.c
+	gcc ${CXXFLAGS} -o bin/feymail-smtpd  feymail-smtpd.c ${LIB_SRC_FILE} ${LIB_FLAGS}
+
+feymail-queue: feymail-queue.c
+	gcc ${CXXFLAGS} -o bin/feymail-queue  feymail-queue.c ${LIB_SRC_FILE} ${LIB_FLAGS}
+
 
 
 
