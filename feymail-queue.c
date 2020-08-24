@@ -1,3 +1,4 @@
+#include <sys/types.h>
 #include <feymail.h>
 #include <feymail-string.h>
 #include <feymail-fd.h>
@@ -30,25 +31,53 @@ int flagmadeintd = 0;
 
 static int timeout = 1200;
 
-static void print_debug()
+static void print_debug(int e)
 {
-    fprintf(stderr,"%s\n",strerror(errno));
+    fprintf(stderr,"in %s :%d:%s\n",__func__,e,strerror(errno));
 }
 
-static void die(e) int e; { print_debug();_exit(e);}
+static int seek_trunc(int fd,unsigned long pos)
+{
+    return ftruncate(fd,(off_t) pos); 
+}
+
+void cleanup()                                                                                                                       
+{                                                                                                                                    
+    if (flagmadeintd){                                                                                                               
+        seek_trunc(intdfd,0);                                                                                                        
+        if(unlink(intdfn) == -1) return;                                                                                             
+    }                                                                                                                                
+    if (flagmademess){                                                                                                               
+        seek_trunc(messfd,0);                                                                                                        
+        if (unlink(messfn) == -1) return;                                                                                            
+    }                                                                                                                                
+}  
+
+static void die(int e) 
+{ 
+    print_debug(e);
+    _exit(e);
+}
+
+static void die_cleanup(int e)
+{
+    cleanup();  
+    _exit(e);
+}
+
 
 
 static int saferead(int fd,char *buf,int len)
 {
-    int r;
-
-    //flush();                                                                                                                       
-    r = feymail_timeoutread(timeout,fd,buf,len);                                                                                     
-    if (r == -1) if (errno == ETIMEDOUT) die(10);                                                                                
-    if (r <= 0) die(11);                                                                                                          
-                                                                                                                                     
-    return r;                                                                                                                        
+    return feymail_timeoutread(timeout,fd,buf,len);
 }     
+
+static int safewrite(int fd,char *buf,int len)
+{
+    return feymail_timeoutwrite(timeout,fd,buf,len);
+}
+
+
 
 static int open_excl(char *fn)
 { 
@@ -101,7 +130,7 @@ static void pidopen()
         if (messfd != -1) return;/*create success,return*/
     }
 
-    fprintf(stderr,"open error:%s\n",strerror(errno));
+    fprintf(stderr,"in %s open error:%s\n",__func__,strerror(errno));
     die(63);
 }
 
@@ -114,6 +143,14 @@ static void create_queue_node()
     */
 }
 
+static void fdbuf_copy(int from,int to)
+{
+    char ch;
+    while(saferead(from,&ch,1)==1){
+        if(safewrite(to,&ch,1) !=1) break;                                                                                                   
+    }//for                                                                                                                           
+    return;       
+}
 
 int main()
 {
@@ -142,8 +179,26 @@ int main()
     if (unlink(pidfn) == -1) die(63);
     flagmademess = 1;
 
-    fprintf(stderr,"messfn:%s\n",messfn);
+
+    /*from stdin read mess and wite to messfd*/    
+    fdbuf_copy(0,messfd);
+    if(fsync(messfd) == -1) die_cleanup(54);
+die(0);
+
+    /*process intdfn*/
+    intdfd = open_excl(intdfn);
+    if (intdfd == -1) die(65);
+    flagmadeintd = 1;
+
+    int rbytes=saferead(1,inbuf,sizeof(inbuf));
+    if(rbytes<=0) die_cleanup(52);
+
+    int wbytes = safewrite(intdfd,inbuf,rbytes);
+    if(wbytes <=0) die_cleanup(53);
+
+    if (fsync(intdfd) == -1) die_cleanup(53);
+    if (link(intdfn,todofn) == -1) die(66);
 
 
-    _exit(0);
+    die(0);
 }

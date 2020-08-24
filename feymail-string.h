@@ -30,6 +30,10 @@ SOFTWARE.
 
 ////////////////////////////////function////////////////////////////////////////   
 
+
+extern unsigned int feymail_strlen(char *s);
+
+
 /*                                                                                                                                   
 *Functionality:                                                                                                                      
 *  String comparison, ignoring case..                                                                                                           

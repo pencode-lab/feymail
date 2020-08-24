@@ -65,7 +65,7 @@ typedef struct feymail {
     int flagerr; /*error flag*/
     unsigned long pid; /*child pid*/
     int fdm; /*parent(write) message to child(0) pipe*/
-    int fde; /*parent(write) error message to child(1) pipe*/
+    int fde; /*parent(write) control message to child(1) pipe*/
 }feymail;
 
 
@@ -93,6 +93,11 @@ extern void feymail_print_version();
 *   return true or false.                                                                                                                            
 */
 extern bool feymail_open(feymail *m);
+
+
+
+extern void feymail_from(feymail *mq,char *s);
+extern void feymail_to(feymail *mq,char *s);
 
 
 /*

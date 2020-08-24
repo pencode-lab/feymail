@@ -2,6 +2,22 @@
 
 static int auto_split=8;
 
+
+unsigned int feymail_strlen(char *s)
+{
+    char *t;
+
+    t = s;
+    for (;;) {
+        if (!*t) return t - s; ++t;
+        if (!*t) return t - s; ++t;
+        if (!*t) return t - s; ++t;
+        if (!*t) return t - s; ++t;
+    }
+}
+
+
+
 static int case_diffs(s,t)
 register char *s;
 register char *t;

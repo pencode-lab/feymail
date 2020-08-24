@@ -1,6 +1,8 @@
+#include <unistd.h>
 #include <feymail.h>
 #include <feymail-fd.h>
 #include <feymail-sys.h>
+#include <feymail-string.h>
 
 void feymail_print_version()
 {
@@ -57,6 +59,25 @@ bool feymail_open(feymail *m)
     m->flagerr = 0;
 
     return true;
+}
+
+
+
+void feymail_from(feymail *mq,char *s)
+{
+    close(mq->fdm);
+/*
+    if(write(mq->fde,"F",1) !=1) fprintf(stderr,"%s:%s\n",__func__,strerror(errno));
+    if(write(mq->fde,s,feymail_strlen(s))<0) fprintf(stderr,"%s:%s\n",__func__,strerror(errno));
+    if(write(mq->fde,"",1) !=1) fprintf(stderr,"%s:%s\n",__func__,strerror(errno));
+*/
+}
+
+void feymail_to(feymail *mq, char *s)
+{
+    if(write(mq->fde,"T",1)!=1) fprintf(stderr,"%s:%s\n",__func__,strerror(errno));
+    if(write(mq->fde,s,feymail_strlen(s)) <0) fprintf(stderr,"%s:%s\n",__func__,strerror(errno));
+    if(write(mq->fde,"",1) !=1) fprintf(stderr,"%s:%s\n",__func__,strerror(errno));
 }
 
 
