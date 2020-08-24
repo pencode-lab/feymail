@@ -33,7 +33,16 @@ int main()
     ret  = feymail_string_rchr(s,strlen(s),'k');
     printf("feymail_string_rchr(\"%s\",\'k\')  return:%d\n",s,ret);
 
+    int len =0;
+    int i=0;
+    char buffer[256]={0};
+    char *sp=buffer;
+    i = feymail_fmt_str(sp,"pid/"); len += i; if (sp) sp += i;
 
+    i = feymail_fmt_ulong(sp,getpid());
+
+    printf("feymail_fmt_str(\"%s\")  return:%d\n",buffer,len+i);
+ 
 
 
 }

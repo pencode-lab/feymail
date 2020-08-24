@@ -10,7 +10,7 @@
 
 
 int timeout = 1200;
-feymail m;
+feymail mq;/*smtp to queue*/
 
 static int safewrite(int fd,char *buf,int len)
 {
@@ -191,10 +191,17 @@ static void smtp_data(char *argv)
 {
     char *s;
     fprintf(stderr,"in function:%s\n",__func__);
-    feymail_open(&m);
-    s = feymail_close(&m);
+    feymail_open(&mq);
 
-    if(!*s) acceptmessage(m.pid);
+    s = "string from parent.";
+    safewrite(mq.fdm,s,strlen(s)); 
+
+    s = "string from parent:error.";
+    safewrite(mq.fde,s,strlen(s));
+
+    s = feymail_close(&mq);
+
+    if(!*s) acceptmessage(mq.pid);
     else
         fprintf(stderr,"queue close,return:%s\n",s);
 

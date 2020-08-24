@@ -53,7 +53,7 @@ extern "C" {
 
 #define VERSION "feymail version is V0.01.20200820.01"
 
-
+#define feymail_homedir  "/var/feymail"
 
 ////////////////////////////////variable define///////////////////////////////////////////
 typedef enum {
@@ -62,10 +62,10 @@ typedef enum {
 }bool;
 
 typedef struct feymail {
-    int flagerr;
-    unsigned long pid;
-    int fdm;
-    int fde;
+    int flagerr; /*error flag*/
+    unsigned long pid; /*child pid*/
+    int fdm; /*parent(write) message to child(0) pipe*/
+    int fde; /*parent(write) error message to child(1) pipe*/
 }feymail;
 
 

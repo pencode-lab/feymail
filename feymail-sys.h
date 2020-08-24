@@ -64,6 +64,7 @@ eg:
 extern int feymail_wait_pid(int *wstat,int pid);
 
 extern datetime_sec feymail_now();
+extern void feymail_datetime_tai( struct datetime *dt, datetime_sec t);
 
 
 

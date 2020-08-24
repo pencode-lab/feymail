@@ -78,4 +78,13 @@ feymail_string_rchr("FufccfkkkkkA",'k')  return:10
 */
 extern unsigned int feymail_string_rchr(char *s,int n,int c);
 
+
+
+
+extern unsigned int feymail_fmt_str(char *s,char *t);
+
+extern unsigned int feymail_fmt_ulong(char *s,unsigned long u);
+
+extern unsigned int feymail_fmtqfn(char *s,char *dirslash,unsigned long id,int flagsplit);
+
 #endif
