@@ -16,38 +16,51 @@ static char rcptto[256]={0};
 int seenmail = 0;
 int flagbarf; /* defined if seenmail */
 
-void straynewline() { fprintf(stdout,"451 See http://pobox.com/~djb/docs/smtplf.html.\r\n"); fflush(stdout); _exit(1); }
 
-static int safewrite(int fd,char *buf,int len)
-{
-    int r;
-    r = feymail_timeoutwrite(timeout,fd,buf,len);
-    if (r <= 0) _exit(1);
-    return r;
+static void respond(const char* msg)                                                                                                 
+{                                                                                                                                    
+    fprintf(stdout,"%s",msg);                                                                                                        
+    fflush(stdout);                                                                                                                  
+}                                                                                                                                    
+                                                                                                                                     
+static void respond_delay(const char *msg)                                                                                           
+{                                                                                                                                    
+    fprintf(stdout,"%s",msg);                                                                                                        
+}    
+
+
+void straynewline() { 
+    respond("451 See http://pobox.com/~djb/docs/smtplf.html.\r\n"); 
+    _exit(1); 
 }
-
 
 static void die_read()
 {
-    fprintf(stderr,"die read\n");
-    return;
+    //_exit(1);
 }
 
 static void die_alarm()
 {
-    fprintf(stderr,"die alarm\n");
-    return;
+    respond("451 timeout (#4.4.2)\r\n");
+    //_exit(1);
 }
+
+static void die_control()
+{ 
+    respond("421 feymail system error (#4.3.0)\r\n"); 
+    _exit(1); 
+}
+
+static int safewrite(int fd,char *buf,int len)
+{
+    return feymail_timeoutwrite(timeout,fd,buf,len);                                                                                    
+}   
 
 static int saferead(int fd,char *buf,int len)
 {
     int r;
-
-    //flush();
     r = feymail_timeoutread(timeout,fd,buf,len);
     if (r == -1) if (errno == ETIMEDOUT) die_alarm();
-    if (r <= 0) die_read();
-
     return r;
 }
 
@@ -81,11 +94,6 @@ static int oneread(int fd,char *buf,int len)
 }
 
 
-static void respond(const char* msg)
-{
-    fprintf(stdout,"%s\r",msg);
-    fflush(stdout);
-}
 
 static int readline(int fd,char *line)
 {
@@ -118,6 +126,8 @@ static int addrparse(char *arg,char *addr)
     int flagesc;
     int flagquoted;
     unsigned int addr_len =0;
+
+    if(!arg || feymail_strlen(arg)==0) return 0;
  
     terminator = '>';
     i = feymail_string_chr(arg,'<');
@@ -161,38 +171,57 @@ static int addrparse(char *arg,char *addr)
 
 static void err_unimpl(char *arg)
 { 
-    return;
+    respond("502 unimplemented (#5.5.1)\r\n");
 }
 
 static void flush()
 {
+    fflush(stdout);
     return;
 }
 
 /*from remote get all data and deliver to queue success*/
+char accept_buf[40];
 static void acceptmessage(unsigned long pid)
 {
     datetime_sec when;
   
     when = feymail_now();
+    respond_delay("250 ok ");
 
-    respond("250 ok\r\n");
-
-    fprintf(stderr,"feymail accept data ok.\n");
+    accept_buf[feymail_fmt_ulong(accept_buf,(unsigned long) when)] = 0;
+    respond_delay(accept_buf);
+    respond_delay(" qp ");
+    accept_buf[feymail_fmt_ulong(accept_buf,pid)] = 0;
+    respond_delay(accept_buf);
+    respond("\r\n");
 }
 
 
 /////////////////////////////////////standard command function for smtp///////////////////////////////
-static void smtp_quit()
+static void smtp_quit(char *argv)
 {
-    fprintf(stderr,"in function:%s\n",__func__);                                                                                     
+    respond("221 \r\n");
     _exit(0);
 }
 
+void smtp_greet(char *argv)
+{
+    respond("250 feymail welcome.\r\n");
+}
+
+
+
 static void smtp_helo(char *argv)
 {
-    fprintf(stderr,"in function:%s\n",__func__);
-    return ;
+    respond("250 \r\n");
+    seenmail = 0; 
+}
+
+void smtp_rset(arg) char *arg;
+{
+    seenmail = 0;
+    respond("250 flushed\r\n");
 }
 
 
@@ -202,11 +231,13 @@ void smtp_mail(arg) char *arg;
     unsigned int addr_len=0;
 
     addr_len= addrparse(arg,mailfrom);
-    if (addr_len<=0) { respond("555 syntax error (#5.5.4)\r\n"); return; }
+
+    if(addr_len<=0){
+        respond("555 syntax error (#5.5.4)\r\n"); 
+        return; 
+    }
     seenmail=1;
     respond("250 ok\r\n");
-
-    fprintf(stderr,"[%s]\n",mailfrom);
 }
 
 void smtp_rcpt(arg) char *arg; {
@@ -217,7 +248,6 @@ void smtp_rcpt(arg) char *arg; {
     if (addr_len<=0) { respond("555 syntax error (#5.5.4)\r\n"); return; }
     
     respond("250 ok\r\n");
-    fprintf(stderr,"[%s]\n",rcptto);
 }
 
 static void recv_message(feymail *mq)
@@ -248,7 +278,7 @@ static void recv_message(feymail *mq)
                 state = 0;
                 break;
             case 3: /* \r\n + .\r */
-                if (ch == '\n') {fprintf(stderr,"return from recvmsg.\n");return;}
+                if (ch == '\n') return;
                 safewrite(mq->fdm,".",1);
                 safewrite(mq->fdm,"\r",1);
                 if (ch == '\r') { state = 4; continue; }
@@ -258,8 +288,6 @@ static void recv_message(feymail *mq)
                 if (ch == '\n') { state = 1; break; }
                 if (ch != '\r') { safewrite(mq->fdm,"\r",1);; state = 0; }
         }
-        fprintf(stderr,"%c",ch);
-        //write(mq->fdm,&ch,1);
         safewrite(mq->fdm,&ch,1);
     }//for
 
@@ -268,31 +296,55 @@ static void recv_message(feymail *mq)
 
 static void smtp_data(char *argv)
 {
-    char *s;
-    fprintf(stderr,"in function:%s\n",__func__);
-    feymail_open(&mq);
+    char *qqx;
+
+    
+    if (!seenmail){
+        respond("555 syntax error (#5.5.4)\r\n");  
+        return; 
+    }
+    if (!feymail_strlen(rcptto)){ 
+        respond("503 RCPT first (#5.5.1)\r\n"); 
+        return; 
+    }
+    seenmail = 0;
+
+
+    if(feymail_open(&mq)==false){
+        die_control();
+    }
 
     respond("354 go ahead\r\n");
     recv_message(&mq);
 
     feymail_from(&mq,mailfrom);
     //feymail_to(&mq,rcptto);
-    s = feymail_close(&mq);
+    qqx= feymail_close(&mq);
 
-    if(!*s) acceptmessage(mq.pid);
-    else
-        fprintf(stderr,"queue close,return:%s\n",s);
+    if(!*qqx) {
+        acceptmessage(mq.pid);
+        return;
+    } else{
+        if (*qqx == 'D') 
+            respond_delay("554 "); 
+        else 
+            respond_delay("451 ");
 
-    return ;
+        respond_delay(qqx + 1);
+        respond("\r\n");
+    }
+
+    return;
 }
 
 commands smtpcommands[] = {
-    { "helo", smtp_helo, 0 },
     { "mail", smtp_mail, 0 },
     { "rcpt", smtp_rcpt, 0 },
+    { "helo", smtp_helo, flush },
     { "data", smtp_data, flush },
-    { "quit", smtp_quit,0},
-    { 0, err_unimpl, flush }
+    { "quit", smtp_quit,flush},
+    { "rset", smtp_rset, 0 },
+    { 0,      err_unimpl, flush }
 } ;
 
 
@@ -317,10 +369,9 @@ static bool command(int fin,int fout,commands *c)
         while (*arg == ' ') ++arg;
         cmd[i] = 0;
 
-fprintf(stderr,"cmd=[%s] arg=[%s]\n",cmd,arg);
-
         for (i = 0;c[i].text;++i) 
             if (feymail_string_equals(c[i].text,cmd)) break;
+
 
         c[i].fun(arg);
         if (c[i].flush) c[i].flush();
@@ -334,17 +385,13 @@ fprintf(stderr,"cmd=[%s] arg=[%s]\n",cmd,arg);
 int main(void)
 {
 
-    /*
-    char *arg =" from: stone@bzline.cn";
-    char addr[64]={0};
-
-    unsigned int addr_len= addrparse(arg,addr);
-
-    printf("addr = [%s][%d]\n",addr,addr_len);
-    */
-
     feymail_sig_pipeignore();
-
+/*
+    //note: feymail-queue dir...
+    if (chdir(feymail_homedir) == -1){
+         die_control();
+    }
+*/
     command(0,1,smtpcommands); 
     return(0);
 }

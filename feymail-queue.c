@@ -55,7 +55,6 @@ void cleanup()
 
 static void die(int e) 
 { 
-    print_debug(e);
     _exit(e);
 }
 
@@ -143,13 +142,17 @@ static void create_queue_node()
     */
 }
 
-static void fdbuf_copy(int from,int to)
+static unsigned int fdbuf_copy(int from,int to)
 {
     char ch;
+    int r;
+    unsigned int rbytes=0;
+
     while(saferead(from,&ch,1)==1){
         if(safewrite(to,&ch,1) !=1) break;                                                                                                   
-    }//for                                                                                                                           
-    return;       
+        rbytes ++;
+    }                                                                                                                       
+    return rbytes;       
 }
 
 int main()
@@ -181,7 +184,7 @@ int main()
 
 
     /*from stdin read mess and wite to messfd*/    
-    fdbuf_copy(0,messfd);
+    unsigned int mbytes=fdbuf_copy(0,messfd);
     if(fsync(messfd) == -1) die_cleanup(54);
 die(0);
 
