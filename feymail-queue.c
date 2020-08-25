@@ -4,6 +4,7 @@
 #include <feymail-fd.h>
 #include <feymail-sys.h>
 #include <feymail-alloc.h>
+#include <feymail-trigger.h>
 
 
 char inbuf[2048];
@@ -186,22 +187,23 @@ int main()
     /*from stdin read mess and wite to messfd*/    
     unsigned int mbytes=fdbuf_copy(0,messfd);
     if(fsync(messfd) == -1) die_cleanup(54);
-die(0);
 
     /*process intdfn*/
     intdfd = open_excl(intdfn);
     if (intdfd == -1) die(65);
     flagmadeintd = 1;
 
-    int rbytes=saferead(1,inbuf,sizeof(inbuf));
+    fprintf(stderr,"intdfn = %s\n",intdfn);
+    unsigned int rbytes = fdbuf_copy(1,intdfd);
+    fprintf(stderr,"read bytes =%d\n",rbytes);
     if(rbytes<=0) die_cleanup(52);
 
-    int wbytes = safewrite(intdfd,inbuf,rbytes);
-    if(wbytes <=0) die_cleanup(53);
 
     if (fsync(intdfd) == -1) die_cleanup(53);
     if (link(intdfn,todofn) == -1) die(66);
 
+    
+    feymail_triggerpull("/var/feymail/lock/trigger");
 
     die(0);
 }

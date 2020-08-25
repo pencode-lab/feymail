@@ -318,7 +318,7 @@ static void smtp_data(char *argv)
     recv_message(&mq);
 
     feymail_from(&mq,mailfrom);
-    //feymail_to(&mq,rcptto);
+    feymail_to(&mq,rcptto);
     qqx= feymail_close(&mq);
 
     if(!*qqx) {
